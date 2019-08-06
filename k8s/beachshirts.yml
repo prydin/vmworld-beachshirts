@@ -151,7 +151,7 @@ spec:
   ports:
     - targetPort: 50053
       port: 50053
-      name: http
+      name: grpc
 
   selector:
     app: packaging
@@ -199,7 +199,7 @@ spec:
   ports:
     - targetPort: 50052
       port: 50052
-      name: http
+      name: grpc
 
   selector:
     app: printing

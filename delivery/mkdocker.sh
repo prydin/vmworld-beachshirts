@@ -5,6 +5,5 @@ if [[ -z "${DEMO_REGISTRY}" ]]; then
     exit 1 
 fi
 
-mvn clean install
 docker build -t $DEMO_REGISTRY/delivery .
 docker push $DEMO_REGISTRY/delivery
