@@ -1,5 +1,6 @@
 package com.wfsample.styling;
 
+import com.google.api.Http;
 import com.wavefront.sdk.dropwizard.reporter.WavefrontDropwizardReporter;
 import com.wavefront.sdk.grpc.WavefrontClientInterceptor;
 import com.wavefront.sdk.grpc.reporter.WavefrontGrpcReporter;
@@ -13,6 +14,7 @@ import com.wfsample.beachshirts.ShirtStyle;
 import com.wfsample.beachshirts.Void;
 import com.wfsample.beachshirts.WrapRequest;
 import com.wfsample.beachshirts.WrappingType;
+import com.wfsample.common.B3ClientHeaderInjector;
 import com.wfsample.common.DropwizardServiceConfig;
 import com.wfsample.common.dto.PackedShirtsDTO;
 import com.wfsample.common.dto.ShirtStyleDTO;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import io.dropwizard.Application;
@@ -66,8 +69,10 @@ public class StylingService extends Application<DropwizardServiceConfig> {
     WavefrontClientInterceptor interceptor =
         new WavefrontClientInterceptor.Builder(grpcReporter, factory.getApplicationTags()).
             withTracer(factory.getTracer()).recordStreamingStats().build();
+    B3ClientHeaderInjector injector = new B3ClientHeaderInjector();
+    environment.jersey().register(injector);
     environment.jersey().register(factory.getWavefrontJerseyFilter());
-    environment.jersey().register(new StylingWebResource(interceptor));
+    environment.jersey().register(new StylingWebResource(interceptor, injector));
   }
 
   public class StylingWebResource implements StylingApi {
@@ -76,7 +81,10 @@ public class StylingService extends Application<DropwizardServiceConfig> {
     // sample set of static styles.
     private List<ShirtStyleDTO> shirtStyleDTOS = new ArrayList<>();
 
-    public StylingWebResource(WavefrontClientInterceptor clientInterceptor) {
+    private B3ClientHeaderInjector injector = new B3ClientHeaderInjector();
+
+    public StylingWebResource(WavefrontClientInterceptor clientInterceptor, B3ClientHeaderInjector injector) {
+      this.injector = injector;
       ShirtStyleDTO dto = new ShirtStyleDTO();
       dto.setName("style1");
       dto.setImageUrl("style1Image");
@@ -88,17 +96,20 @@ public class StylingService extends Application<DropwizardServiceConfig> {
       ManagedChannel printingChannel = ManagedChannelBuilder.forAddress(
           configuration.getPrintingHost(), configuration.getPrintingPort()).
           intercept(clientInterceptor).
+              intercept(injector).
           usePlaintext().build();
       ManagedChannel packagingChannel = ManagedChannelBuilder.forAddress(
           configuration.getPackagingHost(), configuration.getPackagingPort()).
           intercept(clientInterceptor).
+              intercept(injector).
           usePlaintext().build();
       printing = PrintingGrpc.newBlockingStub(printingChannel);
       packaging = PackagingGrpc.newBlockingStub(packagingChannel);
 
     }
 
-    public List<ShirtStyleDTO> getAllStyles() {
+    public List<ShirtStyleDTO> getAllStyles(HttpHeaders httpHeaders) {
+      injector.setHttpHeaders(httpHeaders);
       try {
         Thread.sleep(10);
         printing.getAvailableColors(Void.getDefaultInstance());
@@ -111,7 +122,8 @@ public class StylingService extends Application<DropwizardServiceConfig> {
       }
     }
 
-    public PackedShirtsDTO makeShirts(String id, int quantity) {
+    public PackedShirtsDTO makeShirts(String id, int quantity, HttpHeaders httpHeaders) {
+      injector.setHttpHeaders(httpHeaders);
       try {
         Thread.sleep(20);
         Iterator<Shirt> shirts = printing.printShirts(PrintRequest.newBuilder().
@@ -133,7 +145,8 @@ public class StylingService extends Application<DropwizardServiceConfig> {
     }
 
     @Override
-    public Response addStyle(String id) {
+    public Response addStyle(String id, HttpHeaders httpHeaders) {
+      injector.setHttpHeaders(httpHeaders);
       try {
         Thread.sleep(10);
         printing.addPrintColor(Color.newBuilder().setColor("rgb").build());
@@ -145,7 +158,8 @@ public class StylingService extends Application<DropwizardServiceConfig> {
     }
 
     @Override
-    public Response restockStyle(String id) {
+    public Response restockStyle(String id, HttpHeaders httpHeaders) {
+      injector.setHttpHeaders(httpHeaders);
       try {
         Thread.sleep(10);
         printing.restockColor(Color.newBuilder().setColor("rgb").build());

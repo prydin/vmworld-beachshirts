@@ -28,14 +28,14 @@ public final class BeachShirtsUtils {
   }
 
   public static <T> T createProxyClient(String url, Class<T> clazz,
-                                        WavefrontJaxrsClientFilter filter) {
+                                        WavefrontJaxrsClientFilter filter, B3HeadersRequestFilter b3Filter) {
     HttpClient httpClient = HttpClientBuilder.create().setMaxConnTotal(2000).
         setMaxConnPerRoute(1000).build();
     ApacheHttpClient4Engine apacheHttpClient4Engine = new ApacheHttpClient4Engine(httpClient, true);
     ResteasyProviderFactory factory = ResteasyProviderFactory.getInstance();
     factory.registerProvider(ResteasyJackson2Provider.class);
     ResteasyClient resteasyClient = new ResteasyClientBuilder().
-        httpEngine(apacheHttpClient4Engine).providerFactory(factory).register(filter).build();
+        httpEngine(apacheHttpClient4Engine).providerFactory(factory).register(filter).register(b3Filter).build();
     ResteasyWebTarget target = resteasyClient.target(url);
     return target.proxy(clazz);
   }

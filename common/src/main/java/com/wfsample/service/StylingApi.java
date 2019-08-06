@@ -12,6 +12,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -25,18 +27,18 @@ import javax.ws.rs.core.Response;
 public interface StylingApi {
 
   @GET
-  List<ShirtStyleDTO> getAllStyles();
+  List<ShirtStyleDTO> getAllStyles(@Context HttpHeaders httpHeaders);
 
   @GET
   @Path("{id}/make")
   @Consumes(MediaType.APPLICATION_JSON)
-  PackedShirtsDTO makeShirts(@PathParam("id") String id, @QueryParam("quantity") int quantity);
+  PackedShirtsDTO makeShirts(@PathParam("id") String id, @QueryParam("quantity") int quantity, @Context HttpHeaders httpHeaders);
 
   @POST
   @Path("{id}/add")
-  Response addStyle(@PathParam("id") String id);
+  Response addStyle(@PathParam("id") String id, @Context HttpHeaders httpHeaders);
 
   @POST
   @Path("{id}/update")
-  Response restockStyle(@PathParam("id") String id);
+  Response restockStyle(@PathParam("id") String id, @Context HttpHeaders httpHeaders);
 }

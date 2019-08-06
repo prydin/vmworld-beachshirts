@@ -2,6 +2,7 @@ package com.wfsample.shopping;
 
 import com.wavefront.sdk.dropwizard.reporter.WavefrontDropwizardReporter;
 import com.wavefront.sdk.jersey.WavefrontJerseyFactory;
+import com.wfsample.common.B3HeadersRequestFilter;
 import com.wfsample.common.BeachShirtsUtils;
 import com.wfsample.common.DropwizardServiceConfig;
 import com.wfsample.common.dto.DeliveryStatusDTO;
@@ -40,6 +41,8 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class ShoppingService extends Application<DropwizardServiceConfig> {
   private DropwizardServiceConfig configuration;
 
+  private B3HeadersRequestFilter b3 = new B3HeadersRequestFilter();
+
   private ShoppingService() {
   }
 
@@ -71,9 +74,9 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
     environment.jersey().register(factory.getWavefrontJerseyFilter());
     environment.jersey().register(new ShoppingWebResource(
         BeachShirtsUtils.createProxyClient(stylingUrl, StylingApi.class,
-            factory.getWavefrontJaxrsClientFilter()),
+            factory.getWavefrontJaxrsClientFilter(), b3),
         BeachShirtsUtils.createProxyClient(deliveryUrl, DeliveryApi.class,
-            factory.getWavefrontJaxrsClientFilter())));
+            factory.getWavefrontJaxrsClientFilter(), b3)));
   }
 
   @Path("/shop")
@@ -96,13 +99,14 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return Response.ok(stylingApi.getAllStyles()).build();
+      return Response.ok(stylingApi.getAllStyles(httpHeaders)).build();
     }
 
     @POST
     @Path("/order")
     @Consumes(APPLICATION_JSON)
     public Response orderShirts(OrderDTO orderDTO, @Context HttpHeaders httpHeaders) {
+      b3.setB3Headers(httpHeaders);
       try {
         Thread.sleep(30);
       } catch (InterruptedException e) {
@@ -110,7 +114,7 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
       }
       String orderNum = UUID.randomUUID().toString();
       PackedShirtsDTO packedShirts = stylingApi.makeShirts(
-          orderDTO.getStyleName(), orderDTO.getQuantity());
+          orderDTO.getStyleName(), orderDTO.getQuantity(), httpHeaders);
       Response deliveryResponse = deliveryApi.dispatch(orderNum, packedShirts);
       DeliveryStatusDTO deliveryStatus = deliveryResponse.readEntity(DeliveryStatusDTO.class);
       return Response.status(deliveryResponse.getStatus()).entity(new OrderStatusDTO(orderNum,
@@ -131,7 +135,7 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
     @POST
     @Path("/cancel")
     @Consumes(APPLICATION_JSON)
-    public Response cancelShirtsOrder() {
+    public Response cancelShirtsOrder(@Context HttpHeaders httpHeaders) {
       try {
         Thread.sleep(50);
       } catch (InterruptedException e) {
@@ -143,16 +147,16 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
     @POST
     @Path("/inventory/update")
     @Consumes(APPLICATION_JSON)
-    public Response updateInventory() {
+    public Response updateInventory(@Context HttpHeaders httpHeaders) {
       try {
         Thread.sleep(40);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       if (updateInventory.incrementAndGet() % 3 == 0) {
-        return stylingApi.addStyle("21");
+        return stylingApi.addStyle("21", httpHeaders);
       } else {
-        return stylingApi.restockStyle("42");
+        return stylingApi.restockStyle("42", httpHeaders);
       }
     }
   }
