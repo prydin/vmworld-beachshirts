@@ -4,4 +4,4 @@ RUN apk add --no-cache curl
 
 COPY loadgen.sh /loadgen.sh
 
-ENTRYPOINT /loadgen.sh shopping 1
+ENTRYPOINT /loadgen.sh shopping 15
