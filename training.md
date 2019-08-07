@@ -1,20 +1,22 @@
 # Istio Lab Guide
 
-##Create your namespace
+## Create your namespace
 ```
 create namespace <your login>
 
 kubectl config set-context --current --namespace=<your login>
 ```
 
-##Starting the application
+## Starting the application
 ```
 cd ~/sample-app-java/
+
+git pull
 
 kubectl apply -f k8s/beachshirts.yml
 ```
 
-## Starting the load generator
+## Starting the load generator 
 ```
 kubectl apply -f loadgen/loadgen.yaml
 ```
@@ -47,14 +49,14 @@ for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f 
 kubectl apply -f install/kubernetes/istio-demo.yaml
 ```
 
-###Wait for the cluster to stabilize
+### Wait for the cluster to stabilize
 ```
 kubectl get po -A
 ```
 
 All pods should be in state "Completed" or "Running"
 
-###Configure the Wavefront Proxy
+### Configure the Wavefront Proxy
 ```
 vi k8s/proxy.yml
 ```
@@ -126,13 +128,13 @@ spec:
     app: wavefront-proxy
 ```
 
-###Start a Wavefront proxy
+### Start a Wavefront proxy
 
 ```
 kubectl apply -f k8s/proxy.yml -n default
 ```
 
-###Deploy with Istio sidecars
+### Deploy with Istio sidecars
 
 ```
 kubectl apply -f <(istioctl kube-inject -f ~/sample-app-java/k8s/beachshirts.yml)
