@@ -1,5 +1,5 @@
 #!/bin/bash
-export DEMO_REGISTRY=gcr.io/wavefront-dt-training
+export DEMO_REGISTRY=gcr.io/prydin-beachshirts
 mvn clean install
 cd delivery
 ./mkdocker.sh

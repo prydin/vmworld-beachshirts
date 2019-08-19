@@ -12,7 +12,7 @@ spec:
   type: LoadBalancer
   ports:
     - targetPort: 50050
-      port: 50050
+      port: 80
       protocol: TCP
       name: http
       
@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: shopping
-          image: gcr.io/wavefront-dt-training/shopping
+          image: gcr.io/prydin-beachshirts/shopping
           env:
             - name: PROXYHOST
               value: "wavefront-proxy.default.svc.cluster.local"
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
         - name: styling
-          image: gcr.io/wavefront-dt-training/styling
+          image: gcr.io/prydin-beachshirts/styling
           env:
             - name: PROXYHOST
               value: "wavefront-proxy.default.svc.cluster.local"
@@ -128,7 +128,7 @@ spec:
     spec:
       containers:
         - name: delivery
-          image: gcr.io/wavefront-dt-training/delivery
+          image: gcr.io/prydin-beachshirts/delivery
           env:
             - name: PROXYHOST
               value: "wavefront-proxy.default.svc.cluster.local"
@@ -173,7 +173,7 @@ spec:
     spec:
       containers:
         - name: packaging
-          image: gcr.io/wavefront-dt-training/packaging
+          image: gcr.io/prydin-beachshirts/packaging
           env:
             - name: PRICE_CACHE_SIZE
               value: "100"
@@ -221,7 +221,7 @@ spec:
     spec:
       containers:
         - name: printing
-          image: gcr.io/wavefront-dt-training/printing
+          image: gcr.io/prydin-beachshirts/printing
           env:
             - name: PRICE_CACHE_SIZE
               value: "100"
