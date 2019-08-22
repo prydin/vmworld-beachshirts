@@ -31,22 +31,37 @@ class Card extends PureComponent {
         return options;
     }
 
-    handleChange = () => this.setState({value: this.selectRef.current.value});
+    handleChange = () => this.setState({value: this.selectRef.current.value})
 
     handleOrder = () => {
-        this.setState({isLoading: true, alert: null});
-        const start = Date.now();
+        this.setState({isLoading: true, alert: null})
+        const start = Date.now()
         orderShirts(this.props.item.name, this.state.value)
         .then((data) => {
-            const end = Date.now();
+            const end = Date.now()
             const duration = ((end - start) >= 1000) ? `${(end - start)/1000}s` : `${(end - start)}ms`;
-            this.setState({
-                isLoading: false,
-                alert: {
-                    type: data.status === 200 ? messageTypes.SUCCESS : messageTypes.FAILURE,
-                    header: data.status === 200 ? `Order succeeded after ${duration}` : `Order failed after ${duration}. try again!`,
-                }
-            });
+
+
+            if(data.status == 200) {
+                data.json().then((data) => {
+                    var amount = data.amount
+                    this.setState({
+                        isLoading: false,
+                        alert: {
+                            type: messageTypes.SUCCESS,
+                            header: `Added \$${amount} to shopping cart`
+                        }
+                    })
+                })
+            } else {
+                this.setState({
+                    isLoading: false,
+                    alert: {
+                        type:  messageTypes.FAILURE,
+                        header: `Order failed after ${duration}. try again!`,
+                    }
+                })
+            }
         })
     }
 

@@ -222,6 +222,48 @@ spec:
       containers:
         - name: printing
           image: gcr.io/prydin-beachshirts/printing
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50052
+
+
+##################################################################################################
+# Pricing service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: pricing
+  labels:
+    app: pricing
+
+spec:
+  ports:
+    - targetPort: 50055
+      port: 50055
+      name: grpc
+
+  selector:
+    app: pricing
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: pricing
+
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: pricing
+      labels:
+        app: pricing
+        env: prod
+
+    spec:
+      containers:
+        - name: pricing
+          image: gcr.io/prydin-beachshirts/pricing:latest
           env:
             - name: PRICE_CACHE_SIZE
               value: "100"
@@ -229,4 +271,4 @@ spec:
               value: "wavefront-proxy.default.svc.cluster.local"
           imagePullPolicy: Always
           ports:
-            - containerPort: 50052
+            - containerPort: 50055

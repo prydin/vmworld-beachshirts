@@ -9,8 +9,10 @@ server:
 
 stylingPort: 50051
 deliveryPort: 50054
+pricingPort: 50055
 stylingHost: "styling"
 deliveryHost: "delivery"
+pricingHost: "pricing"
 
 applicationTagsYamlFile: "./shopping/applicationTags.yaml"
 wfReportingConfigYamlFile: "./wfReportingConfig.yaml"

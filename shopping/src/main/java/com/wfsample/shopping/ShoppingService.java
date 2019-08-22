@@ -10,6 +10,7 @@ import com.wfsample.common.dto.OrderDTO;
 import com.wfsample.common.dto.OrderStatusDTO;
 import com.wfsample.common.dto.PackedShirtsDTO;
 import com.wfsample.service.DeliveryApi;
+import com.wfsample.service.PricingApi;
 import com.wfsample.service.StylingApi;
 
 import java.util.UUID;
@@ -63,6 +64,8 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
         .getStylingPort();
     String deliveryUrl = "http://" + configuration.getDeliveryHost() + ":" +
         configuration.getDeliveryPort();
+    String pricingUrl = "http://" + configuration.getPricingHost() + ":" +
+            configuration.getPricingPort();
     WavefrontJerseyFactory factory = new WavefrontJerseyFactory(
         configuration.getApplicationTagsYamlFile(), configuration.getWfReportingConfigYamlFile());
     WavefrontDropwizardReporter dropwizardReporter = new WavefrontDropwizardReporter.Builder(
@@ -76,6 +79,8 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
         BeachShirtsUtils.createProxyClient(stylingUrl, StylingApi.class,
             factory.getWavefrontJaxrsClientFilter(), b3),
         BeachShirtsUtils.createProxyClient(deliveryUrl, DeliveryApi.class,
+            factory.getWavefrontJaxrsClientFilter(), b3),
+        BeachShirtsUtils.createProxyClient(pricingUrl, PricingApi.class,
             factory.getWavefrontJaxrsClientFilter(), b3)));
   }
 
@@ -84,11 +89,13 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
   public class ShoppingWebResource {
     private final StylingApi stylingApi;
     private final DeliveryApi deliveryApi;
+    private final PricingApi pricingApi;
     private final AtomicInteger updateInventory = new AtomicInteger(0);
 
-    public ShoppingWebResource(StylingApi stylingApi, DeliveryApi deliveryApi) {
+    public ShoppingWebResource(StylingApi stylingApi, DeliveryApi deliveryApi, PricingApi pricingApi) {
       this.stylingApi = stylingApi;
       this.deliveryApi = deliveryApi;
+      this.pricingApi = pricingApi;
     }
 
     @GET
@@ -117,8 +124,9 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
           orderDTO.getStyleName(), orderDTO.getQuantity(), httpHeaders);
       Response deliveryResponse = deliveryApi.dispatch(orderNum, packedShirts);
       DeliveryStatusDTO deliveryStatus = deliveryResponse.readEntity(DeliveryStatusDTO.class);
+      double amount = Math.round(100 * pricingApi.getPrice(orderDTO.getStyleName(), orderDTO.getQuantity(), httpHeaders)) / 100.0D; // Round to 2 decimals
       return Response.status(deliveryResponse.getStatus()).entity(new OrderStatusDTO(orderNum,
-          deliveryStatus.getStatus())).build();
+          deliveryStatus.getStatus(), amount)).build();
     }
 
     @GET

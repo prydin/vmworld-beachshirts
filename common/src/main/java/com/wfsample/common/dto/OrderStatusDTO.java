@@ -8,13 +8,15 @@ package com.wfsample.common.dto;
 public class OrderStatusDTO {
   String orderId;
   String status;
+  double amount;
 
   public OrderStatusDTO() {
   }
 
-  public OrderStatusDTO(String orderId, String status) {
+  public OrderStatusDTO(String orderId, String status, double amount) {
     this.orderId = orderId;
     this.status = status;
+    this.amount = amount;
   }
 
   public String getStatus() {
@@ -31,5 +33,13 @@ public class OrderStatusDTO {
 
   public void setOrderId(String orderId) {
     this.orderId = orderId;
+  }
+
+  public double getAmount() {
+    return amount;
+  }
+
+  public void setAmount(double amount) {
+    this.amount = amount;
   }
 }

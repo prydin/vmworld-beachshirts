@@ -36,6 +36,12 @@ public class DropwizardServiceConfig extends Configuration {
   private int deliveryPort = 50054;
 
   /**
+   * Port on which pricing service is running.
+   */
+  @JsonProperty
+  private int pricingPort = 50055;
+
+  /**
    * Host on which the styling service is running.
    */
   @JsonProperty
@@ -60,6 +66,20 @@ public class DropwizardServiceConfig extends Configuration {
   private String deliveryHost = "deliveryService";
 
   /**
+   * Host on which the pricing service is running.
+   */
+  @JsonProperty
+  private String pricingHost = "pricingService";
+
+  public int getPricingPort() {
+    return pricingPort;
+  }
+
+  public void setPricingPort(int pricingPort) {
+    this.pricingPort = pricingPort;
+  }
+
+  /**
    * Path to the Application tags yaml file.
    */
   @JsonProperty
@@ -73,6 +93,10 @@ public class DropwizardServiceConfig extends Configuration {
 
   public int getStylingPort() {
     return stylingPort;
+  }
+
+  public void setPricingHost(String pricingHost) {
+    this.pricingHost = pricingHost;
   }
 
   public int getPrintingPort() {
@@ -109,5 +133,9 @@ public class DropwizardServiceConfig extends Configuration {
 
   public String getWfReportingConfigYamlFile() {
     return wfReportingConfigYamlFile;
+  }
+
+  public String getPricingHost() {
+    return pricingHost;
   }
 }
