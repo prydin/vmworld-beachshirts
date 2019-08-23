@@ -99,6 +99,18 @@ public class ShoppingService extends Application<DropwizardServiceConfig> {
     }
 
     @GET
+    @Path("/healthcheck")
+    public Response healthCheck(@Context HttpHeaders httpHeaders) {
+      try {
+        Thread.sleep(20);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return Response.ok().build();
+    }
+
+
+    @GET
     @Path("/menu")
     public Response getShoppingMenu(@Context HttpHeaders httpHeaders) {
       try {
