@@ -1,0 +1,8 @@
+# Reporting with a Wavefront proxy
+reportingMechanism: "proxy"
+proxyHost: "@PROXYHOST@"
+proxyMetricsPort: 2878
+proxyDistributionsPort: 40000
+proxyTracingPort: 30000
+#source: ""
+reportTraces: true
